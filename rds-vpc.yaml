@@ -1,0 +1,104 @@
+ Description of what this change includes
+# Revision number
+# Date
+Description: >
+  Creates a VPC in us-west-2 (deploy stack in us-west-2) spanning at least 3 AZs,
+  with VPC name tag: VPC-Jamsin3511.
+
+Parameters:
+  VpcCidr:
+    Type: String
+    Default: 10.0.0.0/16
+    Description: CIDR block for the VPC (e.g., 10.0.0.0/16)
+
+  SubnetACidr:
+    Type: String
+    Default: 10.0.1.0/24
+    Description: CIDR block for Subnet A (AZ1)
+
+  SubnetBCidr:
+    Type: String
+    Default: 10.0.2.0/24
+    Description: CIDR block for Subnet B (AZ2)
+
+  SubnetCCidr:
+    Type: String
+    Default: 10.0.3.0/24
+    Description: CIDR block for Subnet C (AZ3)
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: VPC-Jamsin3511
+
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetACidr
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: VPC-Jamsin3511-Subnet-A
+
+  SubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetBCidr
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: VPC-Jamsin3511-Subnet-B
+
+  SubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCCidr
+      AvailabilityZone: !Select [2, !GetAZs ""]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: VPC-Jamsin3511-Subnet-C
+
+  RdsInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      VPCSecurityGroups:
+      - <SECURITY-GROUP-ID>
+      AllocatedStorage: '5'
+      DBInstanceClass: db.t3.micro
+      DBInstanceIdentifier: playground-db
+      Engine: MySQL
+      MasterUsername: Admin
+      MasterUserPassword: CloudAcademy123!
+
+Outputs:
+  VpcId:
+    Description: The ID of the created VPC
+    Value: !Ref VPC
+
+  VpcName:
+    Description: Name tag applied to the VPC
+    Value: VPC-Jamsin3511
+
+  SubnetAId:
+    Description: Subnet A ID (AZ index 0)
+    Value: !Ref SubnetA
+
+  SubnetBId:
+    Description: Subnet B ID (AZ index 1)
+    Value: !Ref SubnetB
+
+  SubnetCId:
+    Description: Subnet C ID (AZ index 2)
+    Value: !Ref SubnetC
